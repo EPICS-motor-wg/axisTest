@@ -8,6 +8,7 @@
 #include "cmd_buf.h"
 #include "hw_motor.h"
 #include "cmd_IcePAP.h"
+#include "cmd_IcePAP-internal.h"
 
 #define ICEPAP_SEND_NEWLINE  1
 #define ICEPAP_SEND_OK 2
@@ -116,6 +117,25 @@ static int handle_IcePAP_cmd(const char *myarg_1)
     cmd_buf_printf("%d:%s %s", motor_axis_no, myarg_1 ,"ON");
     return ICEPAP_SEND_NEWLINE;
   }
+  if (0 == strcmp(myarg_1, "?VELOCITY")) {
+    int velocity = 333;
+    cmd_buf_printf("%d:%s %d", motor_axis_no, myarg_1, velocity);
+    return ICEPAP_SEND_NEWLINE;
+  }
+  if (0 == strcmp(myarg_1, "?JOG")) {
+    int jog = 0;
+    cmd_buf_printf("%d:%s %d", motor_axis_no, myarg_1, jog);
+    return ICEPAP_SEND_NEWLINE;
+  }
+  if (0 == strcmp(myarg_1, "?ACCTIME")) {
+    int acctime = 0;
+    cmd_buf_printf("%d:%s %d", motor_axis_no, myarg_1, acctime);
+    return ICEPAP_SEND_NEWLINE;
+  }
+  if (0 == strcmp(myarg_1, "?CFG")) {
+    cmd_buf_printf("%d:%s %s", motor_axis_no, myarg_1, cfg_Axis_str);
+    return ICEPAP_SEND_NEWLINE;
+  }
   return 0;
 }
 
@@ -219,6 +239,28 @@ static int handle_IcePAP_cmd3(const char *myarg_1, const char *myarg_2)
     }
     return ICEPAP_CMD_NOT_IMPLEMENTED;
   }
+  if (0 == strcmp(myarg_1, "?VCONFIG")) {
+    /* In:  1:?VCONFIG MAXPOS */
+    /* Out: 1:?VCONFIG 123 */
+    if (0 == strcmp(myarg_2, "MAXPOS")) {
+      int maxPos = 3500; /* (int)(getHighSoftLimitPos(motor_axis_no) /
+                            getMotorReverseERES(motor_axis_no)); */
+      cmd_buf_printf("%d:%s %d", motor_axis_no, myarg_1, maxPos);
+      return ICEPAP_SEND_NEWLINE;
+    }
+    if (0 == strcmp(myarg_2, "MINPOS")) {
+      int maxPos = 100; /* (int)(getLowSoftLimitPos(motor_axis_no) /
+                           getMotorReverseERES(motor_axis_no)); */
+      cmd_buf_printf("%d:%s %d", motor_axis_no, myarg_1, maxPos);
+      return ICEPAP_SEND_NEWLINE;
+    }
+    if (0 == strcmp(myarg_2, "DEADBAND")) {
+      int deadband = 10;
+      cmd_buf_printf("%d:%s %d", motor_axis_no, myarg_1, deadband);
+      return ICEPAP_SEND_NEWLINE;
+    }
+    return 0;
+  } /* VCONFIG */
 
 #if NOTTESTED
   if (0 == strcmp(myarg_1, "RMOVE")) {

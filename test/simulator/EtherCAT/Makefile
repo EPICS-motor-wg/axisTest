@@ -146,7 +146,8 @@ $(BIN)/cmd_IcePAP.o: \
  Makefile \
  cmd_IcePAP.c \
  hw_motor.h \
- cmd_IcePAP.h
+ cmd_IcePAP.h \
+ cmd_IcePAP-internal.h
 	$(CC) -c $(CFLAGS) cmd_IcePAP.c -o $@
 
 $(BIN)/cmd_TCPsim.o: \
