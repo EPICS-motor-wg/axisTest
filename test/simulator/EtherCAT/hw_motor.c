@@ -19,6 +19,7 @@
 #define MOTOR_VEL_HOME_MAX 5.0
 
 #define RAMPDOWNONLIMIT 3
+#define RAMPUPAFTERSTART 2
 
 typedef struct
 {
@@ -63,6 +64,7 @@ typedef struct
     int hitPosLimitSwitch;
     int hitNegLimitSwitch;
     unsigned int rampDownOnLimit;
+    unsigned int rampUpAfterStart;
     int clipped;
   } moving;
   double EncoderPos;
@@ -275,6 +277,9 @@ double getMotorVelocity(int axis_no)
 {
   double velocity;
   AXIS_CHECK_RETURN_ZERO(axis_no);
+  if (motor_axis[axis_no].moving.rampUpAfterStart) {
+    return 0;
+  }
   velocity = getMotorVelocityInt(axis_no);
   return velocity;
 }
@@ -288,6 +293,9 @@ int isMotorMoving(int axis_no)
   if (motor_axis[axis_no].moving.rampDownOnLimit) {
     motor_axis[axis_no].moving.rampDownOnLimit--;
     return 1;
+  }
+  if (motor_axis[axis_no].moving.rampUpAfterStart) {
+    return 0;
   }
   return getMotorVelocityInt(axis_no) ? 1 : 0;
 }
@@ -573,6 +581,15 @@ static void simulateMotion(int axis_no)
   AXIS_CHECK_RETURN(axis_no);
   if (getManualSimulatorMode(axis_no)) return;
 
+  if (motor_axis[axis_no].moving.rampUpAfterStart) {
+    fprintf(stdlog,
+            "%s/%s:%d axis_no=%d rampUpAfterStart=%d\n",
+            __FILE__, __FUNCTION__, __LINE__,
+            axis_no,
+            motor_axis[axis_no].moving.rampUpAfterStart);
+    motor_axis[axis_no].moving.rampUpAfterStart--;
+    return;
+  }
   velocity = getMotorVelocity(axis_no);
 
   if (motor_axis[axis_no].amplifierPercent < 100) {
@@ -771,8 +788,10 @@ int movePosition(int axis_no,
 
   if (position > motor_axis[axis_no].MotorPosNow) {
     motor_axis[axis_no].moving.velo.PosVelocity = max_velocity;
+    motor_axis[axis_no].moving.rampUpAfterStart = RAMPUPAFTERSTART;
   } else if (position < motor_axis[axis_no].MotorPosNow) {
     motor_axis[axis_no].moving.velo.PosVelocity = -max_velocity;
+    motor_axis[axis_no].moving.rampUpAfterStart = RAMPUPAFTERSTART;
   } else {
     motor_axis[axis_no].moving.velo.PosVelocity = 0;
   }
@@ -852,8 +871,10 @@ int moveHomeProc(int axis_no,
 
   if (position > motor_axis[axis_no].MotorPosNow) {
     motor_axis[axis_no].moving.velo.HomeVelocity = velocity;
+    motor_axis[axis_no].moving.rampUpAfterStart = RAMPUPAFTERSTART;
   } else if (position < motor_axis[axis_no].MotorPosNow) {
     motor_axis[axis_no].moving.velo.HomeVelocity = -velocity;
+    motor_axis[axis_no].moving.rampUpAfterStart = RAMPUPAFTERSTART;
   } else {
     motor_axis[axis_no].moving.velo.HomeVelocity = 0;
     motor_axis[axis_no].homed = 1; /* homed again */
@@ -909,6 +930,7 @@ int moveVelocity(int axis_no,
     velocity = -velocity;
   }
   motor_axis[axis_no].moving.velo.JogVelocity = velocity;
+  motor_axis[axis_no].moving.rampUpAfterStart = RAMPUPAFTERSTART;
   return 0;
 };
 
