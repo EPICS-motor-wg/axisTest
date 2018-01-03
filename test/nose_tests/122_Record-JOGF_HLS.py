@@ -58,8 +58,7 @@ class Test(unittest.TestCase):
             self.lib.movePosition(motor, tc_no, old_high_limit, self.moving_velocity, self.acceleration)
             print '%s msta=%x lvio=%d' % (tc_no, mstaE, lvio)
 
-            epics.caput(motor + '.LLM', old_low_limit)
-            epics.caput(motor + '.HLM', old_high_limit)
+            self.lib.setSoftLimitsOn(motor, old_low_limit, old_high_limit)
 
             #self.assertEqual(0, lvio, 'LVIO == 0')
             self.assertEqual(0, mstaE & self.lib.MSTA_BIT_PROBLEM,    'No Error MSTA.Problem at PLUS_LS')

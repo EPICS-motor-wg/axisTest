@@ -39,7 +39,7 @@ class Test(unittest.TestCase):
         motor = self.m1
         tc_no = "TC-201-10-percent-dialPosition"
         print '%s' % tc_no
-        epics.caput(motor + '-En', 1)
+        epics.caput(motor + '.CNEN', 1)
         destination =  (1 * self.saved_HLM + 9 * self.saved_LLM) / 10
         epics.caput(motor + '.VAL', destination, wait=True)
 
@@ -48,8 +48,8 @@ class Test(unittest.TestCase):
     def test_TC_202(self):
         motor = self.m1
         tc_no = "TC-202-JOG-_Enable"
-        saved_Enable = epics.caget(motor + '-En')
-        epics.caput(motor + '-En', 0)
+        saved_Enable = epics.caget(motor + '.CNEN')
+        epics.caput(motor + '.CNEN', 0)
         epics.caput(motor + '.JOGF', 1)
         ret = self.lib.waitForStart(motor, tc_no, 2.0)
         # dummy wait
@@ -88,7 +88,7 @@ class Test(unittest.TestCase):
             if counter == 0:
                 break
 
-        epics.caput(motor + '-En', saved_Enable)
+        epics.caput(motor + '.CNEN', saved_Enable)
         self.assertEqual(0, msta & self.lib.MSTA_BIT_MOVING,  'Clean MSTA.Moving)')
         self.assertEqual(0, bError,   'bError')
         self.assertEqual(0, nErrorId, 'nErrorId')

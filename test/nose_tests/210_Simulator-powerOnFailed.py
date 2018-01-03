@@ -39,7 +39,7 @@ class Test(unittest.TestCase):
     pv_Err   = epics.PV(os.getenv("TESTEDMOTORAXIS") + "-Err")
     pv_nErrorId = epics.PV(os.getenv("TESTEDMOTORAXIS") + "-ErrId")
     pv_nErrRst = epics.PV(os.getenv("TESTEDMOTORAXIS") + "-ErrRst")
-    saved_EN = epics.caget(motor + '-En')
+    saved_CNEN = epics.caget(motor + '.CNEN')
 
     # Jog, wait for start, power off, check error, reset error
     def test_TC_212(self):
@@ -48,7 +48,7 @@ class Test(unittest.TestCase):
         setValueOnSimulator(self, motor, tc_no, "bAmplifierLockedToBeOff",
                             AMPLIFIER_LOCKED_TO_BE_OFF_SILENT)
 
-        epics.caput(motor + '-En', 1, wait=True)
+        epics.caput(motor + '.CNEN', 1, wait=True)
 
         mstaErr = int(epics.caget(motor + '.MSTA', use_monitor=False))
         print '%s Error mstaErr=%s' % (tc_no, self.lib.getMSTAtext(mstaErr))
@@ -61,7 +61,7 @@ class Test(unittest.TestCase):
         nErrorId = self.pv_nErrorId.get(use_monitor=False)
         print '%s Clean self.lib.MSTA_BIT_PROBLEM=%x mstaOKagain=%s bError=%d nErrorId=%d' % (tc_no, self.lib.MSTA_BIT_PROBLEM, self.lib.getMSTAtext(mstaOKagain), bError, nErrorId)
 
-        epics.caput(motor + '-En', self.saved_EN)
+        epics.caput(motor + '.CNEN', self.saved_CNEN)
 
         self.assertNotEqual(0, mstaErr & self.lib.MSTA_BIT_PROBLEM, 'Error MSTA.Problem should be set)')
         self.assertEqual(0, mstaErr & self.lib.MSTA_BIT_SLIP_STALL, 'Error MSTA.Slip stall Error should not be set)')
