@@ -29,6 +29,7 @@ static void init_axis(int axis_no)
   const double MRES = 0.03;
   const double ERES = MRES;
   double ReverseMRES = (double)1.0/MRES;
+  const static int defRampUpAfterStart = 0;
 
   if (axis_no >= MAX_AXES || axis_no < 0) {
     return;
@@ -45,7 +46,8 @@ static void init_axis(int axis_no)
                   valueHigh * ReverseMRES, /* highHardLimitPos */
                   valueLow * ReverseMRES,  /* hWlowPos */
                   valueHigh * ReverseMRES, /* hWhighPos */
-                  0);                      /* homeSwitchPos */
+                  0,                       /* homeSwitchPos */
+                  defRampUpAfterStart);
     setAmplifierPercent(axis_no,100);
   init_done[axis_no] = 1;
   }

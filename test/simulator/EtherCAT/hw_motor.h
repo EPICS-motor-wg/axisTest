@@ -15,9 +15,6 @@ int getAxisHomed(int axis_no);
 void setAxisHomed(int axis_no, int value);
 
 static void init_axis(int);
-#if 0
-void hw_motor_init(int);
-#else
 void hw_motor_init(int axis_no,
                    double ReverseERES,
                    double ParkingPos,
@@ -26,8 +23,8 @@ void hw_motor_init(int axis_no,
                    double highHardLimitPos,
                    double hWlowPos,
                    double hWhighPos,
-                   double homeSwitchPos);
-#endif
+                   double homeSwitchPos,
+                   int    defRampUpAfterStart);
 /* Where does the motor wake up after power-on */
 void setMotorParkingPosition(int axis_no, double value);
 void setHomePos(int axis_no, double value);

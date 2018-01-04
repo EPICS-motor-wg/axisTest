@@ -75,6 +75,7 @@ static void init_axis(int axis_no)
   const double ERES = UREV / SREV;
 
   double ReverseMRES = (double)1.0/MRES;
+  const static int defRampUpAfterStart = 0;
 
   if (axis_no >= MAX_AXES || axis_no < 0) {
     return;
@@ -90,7 +91,8 @@ static void init_axis(int axis_no)
                   valueHigh,              /* highHardLimitPos */
                   valueLow,               /* hWlowPos */
                   valueHigh,              /* hWhighPos */
-                  0);                     /* homeSwitchPos */
+                  0,                      /* homeSwitchPos */
+                  defRampUpAfterStart);
 
     cmd_Motor_cmd[axis_no].maximumVelocity = 50;
     cmd_Motor_cmd[axis_no].homeVeloTowardsHomeSensor = 10;

@@ -42,7 +42,8 @@ static void init_axis(int axis_no)
                   valueHigh,              /* highHardLimitPos */
                   valueLow,               /* hWlowPos */
                   valueHigh,              /* hWhighPos */
-                  0);                     /* homeSwitchPos */
+                  0,                      /* homeSwitchPos */
+                  0);                     /* defRampUpAfterStart */
     init_done[axis_no] = 1;
   }
 }

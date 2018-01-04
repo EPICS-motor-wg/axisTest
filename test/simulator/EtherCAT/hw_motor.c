@@ -19,7 +19,6 @@
 #define MOTOR_VEL_HOME_MAX 5.0
 
 #define RAMPDOWNONLIMIT 3
-#define RAMPUPAFTERSTART 2
 
 typedef struct
 {
@@ -75,6 +74,7 @@ typedef struct
   FILE *logFile;
   int bManualSimulatorMode;
   int amplifierLockedToBeOff;
+  int defRampUpAfterStart;
 } motor_axis_type;
 
 
@@ -143,7 +143,8 @@ void hw_motor_init(int axis_no,
                    double highHardLimitPos,
                    double hWlowPos,
                    double hWhighPos,
-                   double homeSwitchPos)
+                   double homeSwitchPos,
+                   int defRampUpAfterStart)
 {
   static char init_done[MAX_AXES];
 
@@ -184,6 +185,7 @@ void hw_motor_init(int axis_no,
     motor_axis[axis_no].HWhighPos = hWhighPos;
 
     motor_axis[axis_no].HomeSwitchPos = homeSwitchPos;
+    motor_axis[axis_no].defRampUpAfterStart = defRampUpAfterStart;
     //motor_axis[axis_no].amplifierPercent = 100;
     // setMotorParkingPosition(axis_no, MOTOR_PARK_POS);
     // motor_axis[axis_no].ReverseERES = MOTOR_REV_ERES;
@@ -213,7 +215,8 @@ static void init_axis(int axis_no)
                 valueHigh,              /* highHardLimitPos */
                 valueLow,               /* hWlowPos */
                 valueHigh,              /* hWhighPos */
-                0);                     /* homeSwitchPos */
+                0,                      /* homeSwitchPos */
+                0);                     /* defRampUpAfterStart */
 }
 
 
@@ -788,10 +791,10 @@ int movePosition(int axis_no,
 
   if (position > motor_axis[axis_no].MotorPosNow) {
     motor_axis[axis_no].moving.velo.PosVelocity = max_velocity;
-    motor_axis[axis_no].moving.rampUpAfterStart = RAMPUPAFTERSTART;
+    motor_axis[axis_no].moving.rampUpAfterStart = motor_axis[axis_no].defRampUpAfterStart;
   } else if (position < motor_axis[axis_no].MotorPosNow) {
     motor_axis[axis_no].moving.velo.PosVelocity = -max_velocity;
-    motor_axis[axis_no].moving.rampUpAfterStart = RAMPUPAFTERSTART;
+    motor_axis[axis_no].moving.rampUpAfterStart = motor_axis[axis_no].defRampUpAfterStart;
   } else {
     motor_axis[axis_no].moving.velo.PosVelocity = 0;
   }
@@ -871,10 +874,10 @@ int moveHomeProc(int axis_no,
 
   if (position > motor_axis[axis_no].MotorPosNow) {
     motor_axis[axis_no].moving.velo.HomeVelocity = velocity;
-    motor_axis[axis_no].moving.rampUpAfterStart = RAMPUPAFTERSTART;
+    motor_axis[axis_no].moving.rampUpAfterStart = motor_axis[axis_no].defRampUpAfterStart;
   } else if (position < motor_axis[axis_no].MotorPosNow) {
     motor_axis[axis_no].moving.velo.HomeVelocity = -velocity;
-    motor_axis[axis_no].moving.rampUpAfterStart = RAMPUPAFTERSTART;
+    motor_axis[axis_no].moving.rampUpAfterStart = motor_axis[axis_no].defRampUpAfterStart;
   } else {
     motor_axis[axis_no].moving.velo.HomeVelocity = 0;
     motor_axis[axis_no].homed = 1; /* homed again */
@@ -930,7 +933,7 @@ int moveVelocity(int axis_no,
     velocity = -velocity;
   }
   motor_axis[axis_no].moving.velo.JogVelocity = velocity;
-  motor_axis[axis_no].moving.rampUpAfterStart = RAMPUPAFTERSTART;
+  motor_axis[axis_no].moving.rampUpAfterStart = motor_axis[axis_no].defRampUpAfterStart;
   return 0;
 };
 
