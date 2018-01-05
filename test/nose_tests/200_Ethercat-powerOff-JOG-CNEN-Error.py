@@ -54,7 +54,7 @@ class Test(unittest.TestCase):
         ret = self.lib.waitForStart(motor, tc_no, 2.0)
         # dummy wait
 
-        ret = self.lib.waitForStop(motor, tc_no, 2.0)
+        ret = self.lib.waitForStop(motor, tc_no, 4.0)
         self.assertEqual(True, ret, 'waitForStop return True')
 
         msta = int(epics.caget(motor + '.MSTA', use_monitor=False))
@@ -88,7 +88,7 @@ class Test(unittest.TestCase):
             if counter == 0:
                 break
 
-        epics.caput(motor + '.CNEN', saved_Enable)
+        epics.caput(motor + '.CNEN', 1)
         self.assertEqual(0, msta & self.lib.MSTA_BIT_MOVING,  'Clean MSTA.Moving)')
         self.assertEqual(0, bError,   'bError')
         self.assertEqual(0, nErrorId, 'nErrorId')
