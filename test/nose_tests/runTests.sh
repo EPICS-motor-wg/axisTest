@@ -103,6 +103,14 @@ run_nosetests ()
   nosetests "$@" || exit 1
 }
 
+if test -z "$EPICS_CA_ADDR_LIST" && test -z "$EPICS_CA_AUTO_ADDR_LIST"; then
+  if EPICS_CA_ADDR_LIST=127.0.1 EPICS_CA_AUTO_ADDR_LIST=NO caget $TESTEDMOTORAXIS.RBV >/dev/null; then
+    EPICS_CA_ADDR_LIST=127.0.1
+    EPICS_CA_AUTO_ADDR_LIST=NO
+    export EPICS_CA_ADDR_LIST EPICS_CA_AUTO_ADDR_LIST
+  fi
+fi
+
 while test $numruns -gt 0; do
   if ! caget $TESTEDMOTORAXIS.RBV >/dev/null; then
     continue
