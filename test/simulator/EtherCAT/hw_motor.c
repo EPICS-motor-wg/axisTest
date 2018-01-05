@@ -19,6 +19,7 @@
 #define MOTOR_VEL_HOME_MAX 5.0
 
 #define RAMPDOWNONLIMIT 3
+#define RAMPDOWNONSTOP 3
 
 typedef struct
 {
@@ -62,7 +63,7 @@ typedef struct
     } velo;
     int hitPosLimitSwitch;
     int hitNegLimitSwitch;
-    unsigned int rampDownOnLimit;
+    unsigned int rampDown;
     unsigned int rampUpAfterStart;
     int clipped;
   } moving;
@@ -293,8 +294,8 @@ int isMotorMoving(int axis_no)
   if (motor_axis[axis_no].bManualSimulatorMode) {
     return 0;
   }
-  if (motor_axis[axis_no].moving.rampDownOnLimit) {
-    motor_axis[axis_no].moving.rampDownOnLimit--;
+  if (motor_axis[axis_no].moving.rampDown) {
+    motor_axis[axis_no].moving.rampDown--;
     return 1;
   }
   if (motor_axis[axis_no].moving.rampUpAfterStart) {
@@ -503,7 +504,7 @@ static int soft_limits_clip(int axis_no, double velocity)
     clipped = 1;
   }
   if (clipped) {
-    motor_axis[axis_no].moving.rampDownOnLimit = RAMPDOWNONLIMIT;
+    motor_axis[axis_no].moving.rampDown = RAMPDOWNONLIMIT;
   }
   return clipped;
 } /* Soft limits */
@@ -541,7 +542,7 @@ static int hard_limits_clip(int axis_no, double velocity)
     }
   }
   if (clipped) {
-    motor_axis[axis_no].moving.rampDownOnLimit = RAMPDOWNONLIMIT;
+    motor_axis[axis_no].moving.rampDown = RAMPDOWNONLIMIT;
   }
   return clipped;
 }  /* Hard limits */
@@ -665,7 +666,7 @@ static void simulateMotion(int axis_no)
             motor_axis[axis_no].moving.velo.JogVelocity,
             motor_axis[axis_no].moving.velo.PosVelocity,
             motor_axis[axis_no].moving.velo.HomeVelocity,
-            motor_axis[axis_no].moving.rampDownOnLimit,
+            motor_axis[axis_no].moving.rampDown,
             getAxisHome(axis_no),
             motor_axis[axis_no].MotorPosNow);
     memcpy(&motor_axis_last[axis_no], &motor_axis[axis_no], sizeof(motor_axis[axis_no]));
@@ -723,19 +724,35 @@ double getEncoderPos(int axis_no)
 */
 void StopInternal_fl(int axis_no, const char *file, int line_no)
 {
-  unsigned int rampDownOnLimit;
-  rampDownOnLimit = motor_axis[axis_no].moving.rampDownOnLimit;
+  unsigned int rampDown;
+  rampDown = motor_axis[axis_no].moving.rampDown;
 
-  fprintf(stdlog, "%s/%s:%d axis_no=%d rampDownOnLimit=%d file=%s line_no=%d\n",
+  fprintf(stdlog, "%s/%s:%d axis_no=%d rampDown=%d (called %s:%d)\n",
           __FILE__, __FUNCTION__, __LINE__,
-          axis_no, rampDownOnLimit, file, line_no);
+          axis_no, rampDown, file, line_no);
   AXIS_CHECK_RETURN(axis_no);
   memset(&motor_axis[axis_no].moving.velo, 0,
          sizeof(motor_axis[axis_no].moving.velo));
   /* Restore the ramp down */
-  motor_axis[axis_no].moving.rampDownOnLimit = rampDownOnLimit;
+  motor_axis[axis_no].moving.rampDown = rampDown;
 }
 
+void motorStop_fl(int axis_no, const char *file, int line_no)
+{
+  unsigned int rampDown = motor_axis[axis_no].moving.rampDown;
+
+  if (getMotorVelocityInt(axis_no)) {
+    rampDown = RAMPDOWNONSTOP;
+  }
+  fprintf(stdlog, "%s/%s:%d axis_no=%d newrampDown=%u (called %s:%d)\n",
+          __FILE__, __FUNCTION__, __LINE__,
+          axis_no, rampDown, file, line_no);
+  AXIS_CHECK_RETURN(axis_no);
+  memset(&motor_axis[axis_no].moving.velo, 0,
+         sizeof(motor_axis[axis_no].moving.velo));
+
+  motor_axis[axis_no].moving.rampDown = rampDown;
+}
 
 /* caput pv.VAL */
 int movePosition(int axis_no,
@@ -986,7 +1003,7 @@ int getNegLimitSwitch(int axis_no)
             motor_axis[axis_no].moving.hitNegLimitSwitch);
     motor_axis_reported[axis_no].moving.hitNegLimitSwitch = motor_axis[axis_no].moving.hitNegLimitSwitch;
     if (clipped) {
-      motor_axis[axis_no].moving.rampDownOnLimit = RAMPDOWNONLIMIT;
+      motor_axis[axis_no].moving.rampDown = RAMPDOWNONLIMIT;
     }
   }
   motor_axis[axis_no].moving.hitNegLimitSwitch = clipped;
@@ -1008,7 +1025,7 @@ int getPosLimitSwitch(int axis_no)
             motor_axis[axis_no].moving.hitPosLimitSwitch);
     motor_axis_reported[axis_no].moving.hitPosLimitSwitch = motor_axis[axis_no].moving.hitPosLimitSwitch;
     if (clipped) {
-      motor_axis[axis_no].moving.rampDownOnLimit = RAMPDOWNONLIMIT;
+      motor_axis[axis_no].moving.rampDown = RAMPDOWNONLIMIT;
     }
   }
   motor_axis[axis_no].definedHighHardLimitPos = clipped;

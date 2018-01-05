@@ -177,7 +177,8 @@ int moveVelocity(int axis_no,
  */
 void StopInternal_fl(int axis_no, const char *file, int line_no);
 #define StopInternal(a) StopInternal_fl((a), __FILE__, __LINE__);
-#define motorStop(a)    StopInternal_fl((a), __FILE__, __LINE__);
+void motorStop_fl(int axis_no, const char *file, int line_no);
+#define motorStop(a)    motorStop_fl((a), __FILE__, __LINE__);
 
 /*
  *  amplifier power in percent 0..100
