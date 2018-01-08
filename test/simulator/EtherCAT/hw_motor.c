@@ -6,6 +6,8 @@
 #include "hw_motor.h"
 #include "sock-util.h" /* stdlog */
 
+#define NINT(f) (long)((f)>0 ? (f)+0.5 : (f)-0.5)       /* Nearest integer. */
+
 #define MOTOR_POS_HOME 0
 #define MOTOR_REV_ERES (-57)
 #define MOTOR_PARK_POS (-64)
@@ -704,6 +706,14 @@ double getMotorPos(int axis_no)
   simulateMotion(axis_no);
   /* simulate EncoderPos */
   motor_axis[axis_no].EncoderPos = getEncoderPosFromMotorPos(axis_no, motor_axis[axis_no].MotorPosNow);
+  if (motor_axis[axis_no].MRES_23 && motor_axis[axis_no].MRES_24) {
+    /* If we have a scaling, round the position to a step */
+    double MotorPosNow = motor_axis[axis_no].MotorPosNow;
+    double srev = motor_axis[axis_no].MRES_24;
+    double urev = motor_axis[axis_no].MRES_23;
+    long step = NINT(MotorPosNow * srev / urev);
+    return (double)step * urev / srev;
+  }
   return motor_axis[axis_no].MotorPosNow;
 }
 
