@@ -31,19 +31,22 @@ static void init_axis(int axis_no)
     return;
   }
   if (!init_done[axis_no]) {
-    double valueLow = -1.0 * ReverseMRES;
-    double valueHigh = 170.0 * ReverseMRES;
+    struct motor_init_values motor_init_values;
+    double valueLow = -1.0;
+    double valueHigh = 180.0;
+    memset(&motor_init_values, 0, sizeof(motor_init_values));
+    motor_init_values.ReverseERES = MRES/ERES;
+    motor_init_values.ParkingPos = 1 + axis_no/10.0; /* ParkingPOS, steps */
+    motor_init_values.MaxHomeVelocityAbs = 66 * ReverseMRES;
+    motor_init_values.lowHardLimitPos = valueLow * ReverseMRES;
+    motor_init_values.highHardLimitPos = valueHigh * ReverseMRES;
+    motor_init_values.hWlowPos = valueLow * ReverseMRES;
+    motor_init_values.hWhighPos = valueHigh * ReverseMRES;
 
     hw_motor_init(axis_no,
-                  MRES/ERES,              /* ReverseERES */
-                  (100 + axis_no/10.0),   /* ParkingPOS */
-                  66 * ReverseMRES,       /* maxHomeVelocityAbs */
-                  valueLow,               /* lowHardLimitPos */
-                  valueHigh,              /* highHardLimitPos */
-                  valueLow,               /* hWlowPos */
-                  valueHigh,              /* hWhighPos */
-                  0,                      /* homeSwitchPos */
-                  0);                     /* defRampUpAfterStart */
+                  &motor_init_values,
+                  sizeof(motor_init_values));
+
     init_done[axis_no] = 1;
   }
 }
