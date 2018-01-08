@@ -175,6 +175,20 @@ static void motorHandleOneArg(const char *myarg_1)
     cmd_buf_printf("OK");
     return;
   }
+  /* setMRES_23=0 */
+  nvals = sscanf(myarg_1, "setMRES_23=%lf", &fValue);
+  if (nvals == 1) {
+    setMRES_23(motor_axis_no, fValue);
+    cmd_buf_printf("OK");
+    return;
+  }
+  /* setMRES_24=0 */
+  nvals = sscanf(myarg_1, "setMRES_24=%lf", &fValue);
+  if (nvals == 1) {
+    setMRES_24(motor_axis_no, fValue);
+    cmd_buf_printf("OK");
+    return;
+  }
   /* if we come here, we do not understand the command */
   RETURN_OR_DIE("%s/%s:%d line=%s myarg_1=%s",
                 __FILE__, __FUNCTION__, __LINE__,

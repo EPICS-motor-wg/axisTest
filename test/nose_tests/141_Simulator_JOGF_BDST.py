@@ -43,6 +43,11 @@ def setValueOnSimulator(self, motor, tc_no, var, value):
 
 
 def motorInit(tself, motor, tc_no, encRel):
+    # Switch of the scaling & rounding
+    # This should probably fixed in the driver
+    setValueOnSimulator(tself, motor, tc_no, "nAmplifierPercent",   0)
+    setValueOnSimulator(tself, motor, tc_no, "setMRES_23",          0)
+    setValueOnSimulator(tself, motor, tc_no, "setMRES_24",          0)
     setValueOnSimulator(tself, motor, tc_no, "nAmplifierPercent", 100)
     setValueOnSimulator(tself, motor, tc_no, "bAxisHomed",          1)
     setValueOnSimulator(tself, motor, tc_no, "fLowHardLimitPos",   15)
