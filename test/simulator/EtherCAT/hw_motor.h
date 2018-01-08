@@ -9,6 +9,19 @@
 #define AXIS_CHECK_RETURN_ERROR(_axis) {init_axis(_axis); if (((_axis) <= 0) || ((_axis) >=MAX_AXES)) return (-1);}
 #define AXIS_CHECK_RETURN_EINVAL(_axis) {init_axis(_axis); if (((_axis) <= 0) || ((_axis) >=MAX_AXES)) return (EINVAL);}
 
+typedef struct motor_init_values
+{
+  double ReverseERES;
+  double ParkingPos;
+  double MaxHomeVelocityAbs;
+  double lowHardLimitPos;
+  double highHardLimitPos;
+  double hWlowPos;
+  double hWhighPos;
+  double homeSwitchPos;
+  int    defRampUpAfterStart;
+} motor_init_values;
+
 int getAxisDone(int axis_no);
 int getAxisHome(int axis_no);
 int getAxisHomed(int axis_no);
@@ -16,15 +29,9 @@ void setAxisHomed(int axis_no, int value);
 
 static void init_axis(int);
 void hw_motor_init(int axis_no,
-                   double ReverseERES,
-                   double ParkingPos,
-                   double MaxHomeVelocityAbs,
-                   double lowHardLimitPos,
-                   double highHardLimitPos,
-                   double hWlowPos,
-                   double hWhighPos,
-                   double homeSwitchPos,
-                   int    defRampUpAfterStart);
+                   const struct motor_init_values *pMotor_init_values,
+                   size_t motor_init_len);
+
 /* Where does the motor wake up after power-on */
 void setMotorParkingPosition(int axis_no, double value);
 void setHomePos(int axis_no, double value);

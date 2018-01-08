@@ -75,24 +75,26 @@ static void init_axis(int axis_no)
   const double ERES = UREV / SREV;
 
   double ReverseMRES = (double)1.0/MRES;
-  const static int defRampUpAfterStart = 0;
 
   if (axis_no >= MAX_AXES || axis_no < 0) {
     return;
   }
   if (!init_done[axis_no]) {
+    struct motor_init_values motor_init_values;
     double valueLow = -1.0 * ReverseMRES;
     double valueHigh = 186.0 * ReverseMRES;
+    memset(&motor_init_values, 0, sizeof(motor_init_values));
+    motor_init_values.ReverseERES = MRES/ERES;
+    motor_init_values.ParkingPos = (100 + axis_no/10.0);
+    motor_init_values.MaxHomeVelocityAbs = 5 * ReverseMRES;
+    motor_init_values.lowHardLimitPos = valueLow;
+    motor_init_values.highHardLimitPos = valueHigh;
+    motor_init_values.hWlowPos = valueLow;
+    motor_init_values.hWhighPos = valueHigh;
+
     hw_motor_init(axis_no,
-                  MRES/ERES,              /* ReverseERES */
-                  (100 + axis_no/10.0),   /* ParkingPOS */
-                  5 * ReverseMRES,        /* maxHomeVelocityAbs */
-                  valueLow,               /* lowHardLimitPos */
-                  valueHigh,              /* highHardLimitPos */
-                  valueLow,               /* hWlowPos */
-                  valueHigh,              /* hWhighPos */
-                  0,                      /* homeSwitchPos */
-                  defRampUpAfterStart);
+                  &motor_init_values,
+                  sizeof(motor_init_values));
 
     cmd_Motor_cmd[axis_no].maximumVelocity = 50;
     cmd_Motor_cmd[axis_no].homeVeloTowardsHomeSensor = 10;

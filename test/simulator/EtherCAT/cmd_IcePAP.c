@@ -29,27 +29,28 @@ static void init_axis(int axis_no)
   const double MRES = 0.03;
   const double ERES = MRES;
   double ReverseMRES = (double)1.0/MRES;
-  const static int defRampUpAfterStart = 0;
 
   if (axis_no >= MAX_AXES || axis_no < 0) {
     return;
   }
   if (!init_done[axis_no]) {
+    struct motor_init_values motor_init_values;
     double valueLow = -1.0;
     double valueHigh = 180.0;
+    memset(&motor_init_values, 0, sizeof(motor_init_values));
+    motor_init_values.ReverseERES = MRES/ERES;
+    motor_init_values.ParkingPos = 1 + axis_no/10.0; /* ParkingPOS, steps */
+    motor_init_values.MaxHomeVelocityAbs = 66 * ReverseMRES;
+    motor_init_values.lowHardLimitPos = valueLow * ReverseMRES;
+    motor_init_values.highHardLimitPos = valueHigh * ReverseMRES;
+    motor_init_values.hWlowPos = valueLow * ReverseMRES;
+    motor_init_values.hWhighPos = valueHigh * ReverseMRES;
 
     hw_motor_init(axis_no,
-                  MRES/ERES,               /* ReverseERES */
-                  (1 + axis_no/10.0),      /* ParkingPOS, steps */
-                  66 * ReverseMRES,        /* maxHomeVelocityAbs */
-                  valueLow * ReverseMRES,  /* lowHardLimitPos */
-                  valueHigh * ReverseMRES, /* highHardLimitPos */
-                  valueLow * ReverseMRES,  /* hWlowPos */
-                  valueHigh * ReverseMRES, /* hWhighPos */
-                  0,                       /* homeSwitchPos */
-                  defRampUpAfterStart);
+                  &motor_init_values,
+                  sizeof(motor_init_values));
     setAmplifierPercent(axis_no,100);
-  init_done[axis_no] = 1;
+    init_done[axis_no] = 1;
   }
 }
 

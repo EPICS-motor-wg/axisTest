@@ -136,23 +136,33 @@ static double getMotorPosFromEncoderPos(int axis_no, double EncoderPos)
 #endif
 
 void hw_motor_init(int axis_no,
-                   double ReverseERES,
-                   double ParkingPos,
-                   double MaxHomeVelocityAbs,
-                   double lowHardLimitPos,
-                   double highHardLimitPos,
-                   double hWlowPos,
-                   double hWhighPos,
-                   double homeSwitchPos,
-                   int defRampUpAfterStart)
+                   const struct motor_init_values *pMotor_init_values,
+                   size_t motor_init_len)
 {
   static char init_done[MAX_AXES];
-
-
   if (axis_no >= MAX_AXES || axis_no < 0) {
     return;
   }
+  if (motor_init_len != sizeof(struct motor_init_values)) {
+    fprintf(stderr,
+            "%s/%s:%d axis_no=%d motor_init_len=%u sizeof=%u\n",
+            __FILE__, __FUNCTION__, __LINE__, axis_no,
+            (unsigned)motor_init_len,
+            (unsigned)sizeof(struct motor_init_values));
+      return;
+  }
+
   if (!init_done[axis_no]) {
+    double ReverseERES = pMotor_init_values->ReverseERES;
+    double ParkingPos = pMotor_init_values->ParkingPos;
+    double MaxHomeVelocityAbs = pMotor_init_values->MaxHomeVelocityAbs;
+    double lowHardLimitPos = pMotor_init_values->lowHardLimitPos;
+    double highHardLimitPos = pMotor_init_values->highHardLimitPos;
+    double hWlowPos = pMotor_init_values->hWlowPos;
+    double hWhighPos = pMotor_init_values->hWhighPos;
+    double homeSwitchPos = pMotor_init_values->homeSwitchPos;
+    int    defRampUpAfterStart = pMotor_init_values->defRampUpAfterStart;
+
     fprintf(stdlog,
             "%s/%s:%d axis_no=%d ReverseERES=%f ParkingPos=%f MaxHomeVelocityAbs=%f"
             "\n  lowHardLimitPos=%f highHardLimitPos=%f hWlowPos=%f hWhighPos=%f homeSwitchPos=%f\n",
@@ -197,8 +207,10 @@ void hw_motor_init(int axis_no,
 }
 
 
+
 static void init_axis(int axis_no)
 {
+  struct motor_init_values motor_init_values;
   const double MRES = 1;
   const double UREV = 60.0; /* mm/revolution */
   const double SREV = 2000.0; /* ticks/revolution */
@@ -207,17 +219,20 @@ static void init_axis(int axis_no)
   double valueLow = -1.0 * ReverseMRES;
   double valueHigh = 186.0 * ReverseMRES;
 
+  memset(&motor_init_values, 0, sizeof(motor_init_values));
+  motor_init_values.ReverseERES = MRES/ERES;
+  motor_init_values.ParkingPos = (100 + axis_no/10.0);
+  motor_init_values.MaxHomeVelocityAbs = 5 * ReverseMRES;
+  motor_init_values.lowHardLimitPos = valueLow;
+  motor_init_values.highHardLimitPos = valueHigh;
+  motor_init_values.hWlowPos = valueLow;
+  motor_init_values.hWhighPos = valueHigh;
+
   hw_motor_init(axis_no,
-                MRES/ERES,              /* ReverseERES */
-                (100 + axis_no/10.0),   /* ParkingPOS */
-                5 * ReverseMRES,        /* maxHomeVelocityAbs */
-                valueLow,               /* lowHardLimitPos */
-                valueHigh,              /* highHardLimitPos */
-                valueLow,               /* hWlowPos */
-                valueHigh,              /* hWhighPos */
-                0,                      /* homeSwitchPos */
-                0);                     /* defRampUpAfterStart */
+                &motor_init_values,
+                sizeof(motor_init_values));
 }
+
 
 
 void setMotorParkingPosition(int axis_no, double value)
